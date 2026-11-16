@@ -17,6 +17,14 @@ class TestBalance(unittest.TestCase):
         balance2 = Balance.get_instance()
         self.assertIs(balance1, balance2)
 
+    def test_direct_construction_returns_singleton(self):
+        self.assertIs(Balance(), self.balance)
+
+    def test_constructing_again_preserves_shared_balance(self):
+        self.balance.add_income(75)
+        self.assertEqual(Balance().get_balance(), 75)
+        self.assertEqual(Balance.get_instance().get_balance(), 75)
+
     def test_add_income(self):
         self.balance.add_income(100)
         self.assertEqual(self.balance.get_balance(), 100)
@@ -39,14 +47,21 @@ class TestBalance(unittest.TestCase):
         class FakeCategory:
             pass
         t = Transaction(100, FakeCategory())
+        self.balance.add_income(25)
         with self.assertRaises(ValueError):
             self.balance.apply_transaction(t)
+        self.assertEqual(self.balance.get_balance(), 25)
 
     def test_reset(self):
         self.balance.add_income(100)
         self.balance.add_expense(50)
         self.balance.reset()
         self.assertEqual(self.balance.get_balance(), 0.0)
+
+    def test_summary_formats_net_balance(self):
+        self.balance.add_income(100)
+        self.balance.add_expense(40.5)
+        self.assertEqual(self.balance.summary(), "Current balance: 59.50")
 
 if __name__ == "__main__":
     unittest.main()

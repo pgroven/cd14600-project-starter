@@ -29,10 +29,10 @@ python main.py
 
 This project uses Python’s built-in unittest framework.
 
-To run all tests:
+From the `starter` directory, run all tests:
 
 ```
-python -m unittest discover
+python -m unittest balance.test_balance balance.test_balance_observer transaction.test_transaction transaction.test_transaction_adapter
 ```
 
 To run a single test file:
@@ -42,8 +42,8 @@ python -m unittest balance/test_balance_observer.py
 
 ### Break Down Tests
 
-- test_balance.py → Verifies correct implementation of the Singleton Balance class.
-- test_transaction.py → Confirms transactions update balances correctly.
+- test_balance.py → Verifies the Singleton Balance class and transaction balance updates.
+- test_transaction.py → Checks transaction creation, formatting, and equality.
 - test_transaction_adapter.py → Ensures external income data is correctly adapted into Transaction objects.
 - test_balance_observer.py → Validates that low-balance alerts are triggered at the correct threshold.
 
@@ -66,3 +66,8 @@ python -m unittest balance/test_balance_observer.py
 ## License
 
 [License](LICENSE.txt)
+
+An adapter pattern was added because transaction_adapter.py had an unimplemented to_transaction() method.
+Adding a decorator would add increased complexity.
+All unit tests are now passing  with the command
+'''python -m unittest balance.test_balance balance.test_balance_observer transaction.test_transaction transaction.test_transaction_adapter'''

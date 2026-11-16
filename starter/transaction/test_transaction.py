@@ -20,5 +20,11 @@ class TestTransaction(unittest.TestCase):
         self.assertEqual(t1, t2)
         self.assertNotEqual(t1, t3)
 
+    def test_transaction_equality_distinguishes_category_and_other_types(self):
+        expense = Transaction(20, TransactionCategory.EXPENSE)
+        income = Transaction(20, TransactionCategory.INCOME)
+        self.assertNotEqual(expense, income)
+        self.assertNotEqual(expense, object())
+
 if __name__ == "__main__":
     unittest.main()
