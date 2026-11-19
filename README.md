@@ -9,6 +9,16 @@ You will implement and extend starter code to add functionality such as tracking
 
 Make sure you have python version >= 3.10.x installed on your computer. 
 
+The optional style check uses `pycodestyle`, listed in `requirements.txt`.
+From the repository root, create a virtual environment and install it:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python -m pip install -r requirements.txt
+```
+
+On macOS or Linux, use `.venv/bin/python` instead of
+`.\.venv\Scripts\python`.
 
 ### Installation
 
@@ -32,12 +42,18 @@ This project uses Python’s built-in unittest framework.
 From the `starter` directory, run all tests:
 
 ```
-python -m unittest balance.test_balance balance.test_balance_observer transaction.test_transaction transaction.test_transaction_adapter
+python -m unittest test_main balance.test_balance balance.test_balance_observer transaction.test_transaction transaction.test_transaction_adapter transaction.test_transaction_command
 ```
 
 To run a single test file:
 ```
 python -m unittest balance/test_balance_observer.py
+```
+
+To check PEP 8 style from the repository root:
+
+```powershell
+.\.venv\Scripts\python -m pycodestyle starter
 ```
 
 ### Break Down Tests
@@ -46,6 +62,34 @@ python -m unittest balance/test_balance_observer.py
 - test_transaction.py → Checks transaction creation, formatting, and equality.
 - test_transaction_adapter.py → Ensures external income data is correctly adapted into Transaction objects.
 - test_balance_observer.py → Validates that low-balance alerts are triggered at the correct threshold.
+- test_transaction_command.py → Checks transaction command execution and errors.
+- test_main.py → Checks the sample balances and visible warning.
+
+## Design Reflection
+
+**Singleton.** The finance manager needs one running total, so both `Balance()`
+and `Balance.get_instance()` return the same balance. This gives transactions
+and observers a consistent view, but shared state can leak between tests.
+`TestBalance.setUp()` resets the balance to keep each test independent.
+
+**Adapter.** Freelance income has a different representation from the internal
+`Transaction`. `TransactionAdapter.to_transaction()` converts its amount to an
+income transaction, allowing `Balance` to process it like any other income.
+The trade-off is that the conversion assumes freelance entries are income and
+does not carry over the invoice ID or description.
+
+**Observer.** Balance changes need both a running display and a low-balance
+warning. `Balance` notifies `PrintObserver` and `LowBalanceAlertObserver`
+without depending on their output logic; the sample warns below $100, not at
+$100. This flexibility requires careful registration and cleanup: `main()`
+unregisters its observers, and observer tests use cleanup to prevent callbacks
+from leaking into other tests.
+
+**Command.** `TransactionCommand` wraps a transaction and its target balance,
+so `main()` can execute each operation through the same validation and
+notification path. It separates creating an action from applying it, as tested
+by the balance before and after `execute()`. The extra object adds complexity,
+and executing it again applies the transaction again; it does not provide undo.
 
 ## Project Instructions
 
@@ -66,8 +110,3 @@ python -m unittest balance/test_balance_observer.py
 ## License
 
 [License](LICENSE.txt)
-
-An adapter pattern was added because transaction_adapter.py had an unimplemented to_transaction() method.
-Adding a decorator would add increased complexity.
-All unit tests are now passing  with the command
-'''python -m unittest balance.test_balance balance.test_balance_observer transaction.test_transaction transaction.test_transaction_adapter'''

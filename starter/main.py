@@ -3,6 +3,7 @@ from balance.balance import Balance
 from balance.balance_observer import LowBalanceAlertObserver
 from balance.balance_observer import PrintObserver
 from transaction.transaction import Transaction
+from transaction.transaction_command import TransactionCommand
 from transaction.transaction_category import TransactionCategory
 from transaction.transaction_adapter import TransactionAdapter
 from transaction.external_income_transaction import ExternalFreelanceIncome
@@ -10,8 +11,6 @@ from transaction.external_income_transaction import ExternalFreelanceIncome
 
 def main():
     print("Adding transactions...")
-   
-    # TODO: Create balance and add observers
 
     # Create standard transactions
     transactions = [
@@ -22,13 +21,26 @@ def main():
     ]
 
     # Create an external income transaction (via Adapter pattern)
-    freelance_income = ExternalFreelanceIncome(1200, "INV-98765", "Mobile App Project")
+    freelance_income = ExternalFreelanceIncome(
+        1200, "INV-98765", "Mobile App Project"
+    )
     adapter = TransactionAdapter(freelance_income)
     adapted_transaction = adapter.to_transaction()
 
     all_transactions = transactions + [adapted_transaction]
 
-    # TODO: Apply all transactions to balance
+    balance = Balance.get_instance()
+    print_observer = PrintObserver()
+    alert_observer = LowBalanceAlertObserver(threshold=100)
+    balance.register_observer(print_observer)
+    balance.register_observer(alert_observer)
+    try:
+        for transaction in all_transactions:
+            TransactionCommand(balance, transaction).execute()
+    finally:
+        balance.unregister_observer(print_observer)
+        balance.unregister_observer(alert_observer)
+
 
 if __name__ == "__main__":
     main()

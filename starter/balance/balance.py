@@ -41,7 +41,9 @@ class Balance:
 
     def add_expense(self, amount):
         """Subtract expense from the balance."""
-        self.apply_transaction(Transaction(amount, TransactionCategory.EXPENSE))
+        self.apply_transaction(
+            Transaction(amount, TransactionCategory.EXPENSE)
+        )
 
     def register_observer(self, observer):
         """Register an observer for balance changes."""
@@ -65,7 +67,9 @@ class Balance:
         elif transaction.category == TransactionCategory.EXPENSE:
             self._balance -= transaction.amount
         else:
-            raise ValueError(f"Unsupported transaction category: {transaction.category}")
+            raise ValueError(
+                f"Unsupported transaction category: {transaction.category}"
+            )
         for observer in tuple(self._observers):
             observer.update(self._balance, transaction)
 
